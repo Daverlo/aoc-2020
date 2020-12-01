@@ -33,17 +33,30 @@ func parseInput(path string) ([]int, error) {
 
 func processExpenses(numbers []int) int {
 	sort.Ints(numbers)
-	for i, n := range numbers {
-		c := 2020 - n
-		present, _ := binarySearch(c, numbers[i+1:])
-		if present {
-			return n * c
-		}
+	present, i, j := TargetSum(2020, numbers)
+	if present {
+		return numbers[i] * numbers[j]
 	}
 	return 0
 }
 
-func binarySearch(n int, a []int) (bool, int) {
+// Search for two numbers contained in the array that add up to the target value
+// Returns whether there is a solution and the indices of the values that form it
+func TargetSum(t int, a []int) (bool, int, int) {
+	for i, n := range a {
+		c := t - n
+		present, j := BinarySearch(c, a[i+1:])
+		// j i an index of the subarray used in the binSearch
+		j += i + 1
+
+		if present {
+			return true, i, j
+		}
+	}
+	return false, -1, -1
+}
+
+func BinarySearch(n int, a []int) (bool, int) {
 	l := 0
 	h := len(a) - 1
 	for l <= h {
