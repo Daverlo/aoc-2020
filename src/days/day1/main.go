@@ -31,8 +31,29 @@ func parseInput(path string) ([]int, error) {
 	return res, nil
 }
 
-func processExpenses(numbers []int) int {
+func part1(numbers []int) int {
 	sort.Ints(numbers)
+	present, i, j := TargetSum(2020, numbers)
+	if present {
+		return numbers[i] * numbers[j]
+	}
+	return 0
+}
+
+func part2(numbers []int) int {
+	sort.Ints(numbers)
+	for i, n := range numbers {
+		t := 2020 - n
+
+		present, j, k := TargetSum(t, numbers[i+1:])
+		// j and k are indices of the subarray used in the TargetSum
+		j += i + 1
+		k += i + 1
+
+		if present {
+			return numbers[i] * numbers[j] * numbers[k]
+		}
+	}
 	present, i, j := TargetSum(2020, numbers)
 	if present {
 		return numbers[i] * numbers[j]
@@ -46,7 +67,7 @@ func TargetSum(t int, a []int) (bool, int, int) {
 	for i, n := range a {
 		c := t - n
 		present, j := BinarySearch(c, a[i+1:])
-		// j i an index of the subarray used in the binSearch
+		// j is an index of the subarray used in the binSearch
 		j += i + 1
 
 		if present {
@@ -82,6 +103,9 @@ func main() {
 		panic(err)
 	}
 
-	output := processExpenses(input)
+	output := part1(input)
+	fmt.Println(output)
+
+	output = part2(input)
 	fmt.Println(output)
 }
