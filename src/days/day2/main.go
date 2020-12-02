@@ -12,7 +12,7 @@ type passwordPolicy struct {
 	Max       int
 }
 
-func (pp *passwordPolicy) isValid(password string) bool {
+func (pp *passwordPolicy) isValid1(password string) bool {
 	n := 0
 	for _, c := range password {
 		if c == pp.Character {
@@ -20,6 +20,12 @@ func (pp *passwordPolicy) isValid(password string) bool {
 		}
 	}
 	return pp.Min <= n && n <= pp.Max
+}
+
+func (pp *passwordPolicy) isValid2(password string) bool {
+	first := rune(password[pp.Min-1]) == pp.Character
+	second := rune(password[pp.Max-1]) == pp.Character
+	return first != second
 }
 
 func parseInput(path string) ([]passwordPolicy, []string, error) {
@@ -54,7 +60,17 @@ func parseInput(path string) ([]passwordPolicy, []string, error) {
 func part1(policies []passwordPolicy, passwords []string) int {
 	res := 0
 	for i, pp := range policies {
-		if pp.isValid(passwords[i]) {
+		if pp.isValid1(passwords[i]) {
+			res++
+		}
+	}
+	return res
+}
+
+func part2(policies []passwordPolicy, passwords []string) int {
+	res := 0
+	for i, pp := range policies {
+		if pp.isValid2(passwords[i]) {
 			res++
 		}
 	}
@@ -70,5 +86,8 @@ func main() {
 	}
 
 	output := part1(policies, passwords)
+	fmt.Println(output)
+
+	output = part2(policies, passwords)
 	fmt.Println(output)
 }
