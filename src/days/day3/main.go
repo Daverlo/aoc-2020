@@ -53,20 +53,39 @@ func parseInput(path string) (*Level, error) {
 	return &Level{Level: level, sizeX: len(level[0]), sizeY: len(level)}, nil
 }
 
-func part1(level *Level) int {
+func countTreesInPath(level *Level, displacementX int, displacementY int) int {
 	trees := 0
 	for level.positionY < level.sizeY {
 		if !level.isPositionEmpty() {
 			trees++
 		}
 
-		level.move(3, 1)
+		level.move(displacementX, displacementY)
 	}
 	return trees
 }
 
+func part1(level *Level) int {
+	return countTreesInPath(level, 3, 1)
+}
+
+type Vec2 struct {
+	X int
+	Y int
+}
+
 func part2(level *Level) int {
-	return 0
+	slopes := []Vec2{{X: 1, Y: 1}, {X: 3, Y: 1}, {X: 5, Y: 1}, {X: 7, Y: 1}, {X: 1, Y: 2}}
+
+	res := 1
+	for _, vec := range slopes {
+		// Reset the position
+		level.positionX = 0
+		level.positionY = 0
+
+		res *= countTreesInPath(level, vec.X, vec.Y)
+	}
+	return res
 }
 
 func main() {
@@ -81,5 +100,5 @@ func main() {
 	fmt.Println(output)
 
 	output = part2(level)
-	//fmt.Println(output)
+	fmt.Println(output)
 }
