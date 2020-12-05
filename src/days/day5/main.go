@@ -43,25 +43,25 @@ func part1(input []string) int {
 	return max
 }
 
-func part2(numbers []int) int {
-	sort.Ints(numbers)
-	for i, n := range numbers {
-		t := 2020 - n
+func part2(input []string) int {
+	// Compute all the seat ids
+	var seatIds []int
+	for _, line := range input {
+		row, col := DecodeSeat(line)
+		id := row*8 + col
+		seatIds = append(seatIds, id)
+	}
 
-		present, j, k := TargetSum(t, numbers[i+1:])
-		// j and k are indices of the subarray used in the TargetSum
-		j += i + 1
-		k += i + 1
-
-		if present {
-			return numbers[i] * numbers[j] * numbers[k]
+	sort.Ints(seatIds)
+	for i := 1; i < len(seatIds); i++ {
+		// All the seatID should be contiguous
+		// If there is a gap that is the seat
+		if seatIds[i] == seatIds[i-1]+2 {
+			return seatIds[i] - 1
 		}
 	}
-	present, i, j := TargetSum(2020, numbers)
-	if present {
-		return numbers[i] * numbers[j]
-	}
-	return 0
+
+	return -1
 }
 
 func DecodeSeat(line string) (int, int) {
@@ -104,6 +104,6 @@ func main() {
 	output := part1(input)
 	fmt.Println(output)
 
-	// output = part2(input)
-	// fmt.Println(output)
+	output = part2(input)
+	fmt.Println(output)
 }
