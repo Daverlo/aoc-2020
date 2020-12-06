@@ -10,7 +10,7 @@ import (
 
 type GroupAnswers []string
 
-func (ga GroupAnswers) countYes() int {
+func (ga GroupAnswers) countAnyYes() int {
 	count := 0
 	yes := make(map[rune]bool)
 	for i := 0; i < len(ga); i++ {
@@ -19,6 +19,24 @@ func (ga GroupAnswers) countYes() int {
 				yes[c] = true
 				count++
 			}
+		}
+	}
+
+	return count
+}
+
+func (ga GroupAnswers) countAllYes() int {
+	yes := make(map[rune]int)
+	for i := 0; i < len(ga); i++ {
+		for _, c := range ga[i] {
+			yes[c]++
+		}
+	}
+
+	count := 0
+	for _, v := range yes {
+		if v == len(ga) {
+			count++
 		}
 	}
 
@@ -75,14 +93,20 @@ func part1(groups []GroupAnswers) int {
 	res := 0
 
 	for _, answers := range groups {
-		res += answers.countYes()
+		res += answers.countAnyYes()
 	}
 
 	return res
 }
 
 func part2(groups []GroupAnswers) int {
-	return 0
+	res := 0
+
+	for _, answers := range groups {
+		res += answers.countAllYes()
+	}
+
+	return res
 }
 
 func main() {
@@ -96,6 +120,6 @@ func main() {
 	output := part1(passports)
 	fmt.Println(output)
 
-	// output = part2(passports)
-	// fmt.Println(output)
+	output = part2(passports)
+	fmt.Println(output)
 }
