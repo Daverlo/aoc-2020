@@ -109,9 +109,18 @@ func traverse(rules map[Color]Contents, start Color) int {
 	return len(visited)
 }
 
-// func part2(input []string) int {
-// 	return -1
-// }
+func part2(rules map[Color]Contents) int {
+	return countBags(rules, Color("shiny gold"))
+}
+
+func countBags(rules map[Color]Contents, color Color) int {
+	res := 0
+	for target, quantity := range rules[color] {
+		res += quantity * (1 + countBags(rules, target))
+	}
+
+	return res
+}
 
 func main() {
 	args := os.Args[1:]
@@ -123,6 +132,6 @@ func main() {
 	output := part1(input)
 	fmt.Println(output)
 
-	// output = part2(input)
-	// fmt.Println(output)
+	output = part2(input)
+	fmt.Println(output)
 }
