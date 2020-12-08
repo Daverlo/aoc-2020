@@ -38,6 +38,7 @@ func (g *Graph) RemoveEdge(src int, dst int) {
 	}
 }
 
-func (g *Graph) GetEdge(src int, dst int) int {
-	return g.AdjacencyList[src][dst]
+func (g *Graph) GetEdge(src int, dst int) (int, bool) {
+	cost, present := g.AdjacencyList[src][dst]
+	return cost, present
 }
