@@ -25,7 +25,7 @@ func NewGraph(nodes int) *Graph {
 
 func (g *Graph) AddEdge(src int, dst int, cost int) {
 	g.AdjacencyList[src][dst] = cost
-	g.InDegrees[src]++
+	g.InDegrees[dst]++
 	g.Edges++
 }
 
