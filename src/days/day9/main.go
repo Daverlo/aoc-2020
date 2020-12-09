@@ -75,8 +75,60 @@ func part1(numbers []int) int {
 }
 
 func part2(numbers []int) int {
+	v := part1(numbers)
+	numbers = numbers[1:]
 
-	return 0
+	i, j := getSumIndices(numbers, v)
+	min, max := minAndMax(numbers[i:j])
+	return min + max
+}
+
+func getSumIndices(numbers []int, v int) (int, int) {
+	sums := make([]int, len(numbers))
+	sums[0] = numbers[0]
+	for i := 1; i < len(numbers); i++ {
+		sums[i] = sums[i-1] + numbers[i]
+	}
+
+	i := 0
+	j := 1
+	for ; j < len(numbers); j++ {
+		currentValue := sums[j] - sums[i] + numbers[i]
+		if currentValue == v {
+			break
+		}
+
+		if currentValue < v {
+			continue
+		}
+
+		for i < j-1 {
+			i++
+			currentValue := sums[j] - sums[i] + numbers[i]
+			if currentValue == v {
+				return i, j
+			}
+
+			if currentValue < v {
+				break
+			}
+		}
+	}
+
+	return -1, -1
+}
+func minAndMax(numbers []int) (int, int) {
+	min := numbers[0]
+	max := numbers[0]
+	for i := range numbers {
+		if i < min {
+			min = numbers[i]
+		}
+		if i > max {
+			max = numbers[i]
+		}
+	}
+	return min, max
 }
 
 func main() {
@@ -89,6 +141,6 @@ func main() {
 	output := part1(input)
 	fmt.Println(output)
 
-	// output = part2(input)
-	// fmt.Println(output)
+	output = part2(input)
+	fmt.Println(output)
 }
