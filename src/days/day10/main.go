@@ -49,8 +49,48 @@ func part1(numbers []int) int {
 	return gap1 * gap3
 }
 
+var cache map[int]int
+
 func part2(numbers []int) int {
-	return 0
+	deviceJolts := max(numbers) + 3
+
+	set := make(map[int]bool, len(numbers)+2)
+	for _, n := range numbers {
+		set[n] = true
+	}
+	set[deviceJolts] = true
+
+	cache = make(map[int]int, len(numbers)+2)
+	return calcPart2(set, deviceJolts)
+}
+
+func max(numbers []int) int {
+	max := numbers[0]
+	for i := range numbers {
+		if numbers[i] > max {
+			max = numbers[i]
+		}
+	}
+	return max
+}
+
+func calcPart2(numbers map[int]bool, n int) int {
+	if n == 0 {
+		return 1
+	}
+
+	if !numbers[n] {
+		return 0
+	}
+
+	value, ok := cache[n]
+	if ok {
+		return value
+	}
+
+	value = calcPart2(numbers, n-1) + calcPart2(numbers, n-2) + calcPart2(numbers, n-3)
+	cache[n] = value
+	return value
 }
 
 func main() {
@@ -60,7 +100,9 @@ func main() {
 		panic(err)
 	}
 
-	output := part1(input)
+	inputP1 := make([]int, len(input))
+	copy(inputP1, input)
+	output := part1(inputP1)
 	fmt.Println(output)
 
 	output = part2(input)
