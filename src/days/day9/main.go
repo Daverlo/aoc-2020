@@ -121,10 +121,10 @@ func minAndMax(numbers []int) (int, int) {
 	min := numbers[0]
 	max := numbers[0]
 	for i := range numbers {
-		if i < min {
+		if numbers[i] < min {
 			min = numbers[i]
 		}
-		if i > max {
+		if numbers[i] > max {
 			max = numbers[i]
 		}
 	}
