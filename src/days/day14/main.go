@@ -83,20 +83,64 @@ func applyMask(mask string, v uint64) uint64 {
 	return v
 }
 
-func part2(numbers []int) int {
-	return 0
+func part2(instructions []Instruction) uint64 {
+	memory := make(map[uint64]uint64)
+	for _, inst := range instructions {
+		addresses := computeAddresses(inst.Mask, inst.Address)
+		for _, address := range addresses {
+			memory[address] = inst.Value
+		}
+	}
+
+	var res uint64
+	for _, v := range memory {
+		res += v
+	}
+
+	return res
+}
+
+func computeAddresses(mask string, a uint64) []uint64 {
+	bin := fmt.Sprintf("%036v", strconv.FormatUint(a, 2))
+	for i := range mask {
+		if mask[i] == '1' {
+			bin = bin[:i] + "1" + bin[i+1:]
+		}
+		if mask[i] == 'X' {
+			bin = bin[:i] + "X" + bin[i+1:]
+		}
+	}
+
+	var binAddresses []string
+	binAddresses = append(binAddresses, bin)
+	for i := range bin {
+		if bin[i] == 'X' {
+			for j := range binAddresses {
+				binAddresses[j] = binAddresses[j][:i] + "0" + binAddresses[j][i+1:]
+				binAddresses = append(binAddresses, binAddresses[j][:i]+"1"+binAddresses[j][i+1:])
+			}
+		}
+	}
+
+	var addresses []uint64
+	for _, bA := range binAddresses {
+		v, _ := strconv.ParseUint(bA, 2, 64)
+		addresses = append(addresses, v)
+	}
+
+	return addresses
 }
 
 func main() {
 	args := os.Args[1:]
 	instructions, err := parseInput(args[0])
 	if err != nil {
-		// panic(err)
+		panic(err)
 	}
 
 	output := part1(instructions)
 	fmt.Println(output)
 
-	// output = part2(input)
-	// fmt.Println(output)
+	output = part2(instructions)
+	fmt.Println(output)
 }
