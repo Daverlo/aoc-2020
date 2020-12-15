@@ -6,10 +6,80 @@ import (
 	"os"
 )
 
+type Position struct {
+	I int
+	J int
+}
+
 type WaitingArea struct {
 	Area [][]rune
 	Rows int
 	Cols int
+
+	visibleSeats map[Position][]Position
+}
+
+func (wa *WaitingArea) ComputeVisibleSeats1() {
+	wa.visibleSeats = make(map[Position][]Position)
+
+	for i := 0; i < wa.Rows; i++ {
+		for j := 0; j < wa.Cols; j++ {
+			currentPositon := Position{I: i, J: j}
+
+			for ii := i - 1; ii <= i+1; ii++ {
+				for jj := j - 1; jj <= j+1; jj++ {
+					if ii == i && jj == j {
+						continue
+					}
+					if ii < 0 || ii >= wa.Rows {
+						continue
+					}
+					if jj < 0 || jj >= wa.Cols {
+						continue
+					}
+
+					if wa.Area[ii][jj] == 'L' {
+						wa.visibleSeats[currentPositon] = append(wa.visibleSeats[currentPositon], Position{I: ii, J: jj})
+					}
+				}
+			}
+		}
+	}
+}
+
+func (wa *WaitingArea) ComputeVisibleSeats2() {
+	wa.visibleSeats = make(map[Position][]Position)
+
+	for i := 0; i < wa.Rows; i++ {
+		for j := 0; j < wa.Cols; j++ {
+			currentPositon := Position{I: i, J: j}
+			for iStep := -1; iStep <= 1; iStep++ {
+				for jStep := -1; jStep <= 1; jStep++ {
+					if iStep == 0 && jStep == 0 {
+						continue
+					}
+					ii := i
+					jj := j
+					for {
+						ii += iStep
+						jj += jStep
+
+						if ii < 0 || ii >= wa.Rows {
+							break
+						}
+						if jj < 0 || jj >= wa.Cols {
+							break
+						}
+
+						if wa.Area[ii][jj] == 'L' {
+							wa.visibleSeats[currentPositon] = append(wa.visibleSeats[currentPositon], Position{I: ii, J: jj})
+							break
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 func (wa *WaitingArea) OccupiedSeats() int {
@@ -26,27 +96,19 @@ func (wa *WaitingArea) OccupiedSeats() int {
 
 func (wa *WaitingArea) OccupiedAround(i int, j int) int {
 	var occupied int
-	for ii := i - 1; ii <= i+1; ii++ {
-		for jj := j - 1; jj <= j+1; jj++ {
-			if ii == i && jj == j {
-				continue
-			}
-			if ii < 0 || ii >= wa.Rows {
-				continue
-			}
-			if jj < 0 || jj >= wa.Cols {
-				continue
-			}
+	pos := Position{I: i, J: j}
+	visible, _ := wa.visibleSeats[pos]
 
-			if wa.Area[ii][jj] == '#' {
-				occupied++
-			}
+	for _, p := range visible {
+		if wa.Area[p.I][p.J] == '#' {
+			occupied++
 		}
 	}
+
 	return occupied
 }
 
-func (wa *WaitingArea) Step() bool {
+func (wa *WaitingArea) Step(tolerancy int) bool {
 	newArea := make([][]rune, wa.Rows)
 	for i := 0; i < wa.Rows; i++ {
 		newArea[i] = make([]rune, wa.Cols)
@@ -62,7 +124,7 @@ func (wa *WaitingArea) Step() bool {
 					changed = true
 				}
 			} else if wa.Area[i][j] == '#' {
-				if wa.OccupiedAround(i, j) >= 4 {
+				if wa.OccupiedAround(i, j) >= tolerancy {
 					newArea[i][j] = 'L'
 					changed = true
 				} else {
@@ -110,9 +172,10 @@ func parseInput(path string) (*WaitingArea, error) {
 }
 
 func part1(wa *WaitingArea) int {
+	wa.ComputeVisibleSeats1()
 	for {
 		// fmt.Println(wa)
-		changed := wa.Step()
+		changed := wa.Step(4)
 		if !changed {
 			break
 		}
@@ -120,20 +183,32 @@ func part1(wa *WaitingArea) int {
 	return wa.OccupiedSeats()
 }
 
-func part2(numbers *WaitingArea) int {
-	return 0
+func part2(wa *WaitingArea) int {
+	wa.ComputeVisibleSeats2()
+	for {
+		// fmt.Println(wa)
+		changed := wa.Step(5)
+		if !changed {
+			break
+		}
+	}
+	return wa.OccupiedSeats()
 }
 
 func main() {
 	args := os.Args[1:]
-	numbers, err := parseInput(args[0])
+	input1, err := parseInput(args[0])
 	if err != nil {
 		panic(err)
 	}
 
-	output := part1(numbers)
+	output := part1(input1)
 	fmt.Println(output)
 
-	// output = part2(numbers)
-	// fmt.Println(output)
+	input2, err := parseInput(args[0])
+	if err != nil {
+		panic(err)
+	}
+	output = part2(input2)
+	fmt.Println(output)
 }
