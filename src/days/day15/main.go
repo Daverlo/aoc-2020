@@ -29,6 +29,10 @@ func part1(numbers []int) int {
 	return play(2020, numbers)
 }
 
+func part2(numbers []int) int {
+	return play(30000000, numbers)
+}
+
 func play(target int, numbers []int) int {
 	spoken := make(map[int][]int)
 	turn := 1
@@ -67,10 +71,6 @@ func play(target int, numbers []int) int {
 	return lastTurnNumber
 }
 
-func part2(numbers []int) int {
-	return 0
-}
-
 func main() {
 	args := os.Args[1:]
 	numbers, err := parseInput(args[0])
@@ -81,6 +81,6 @@ func main() {
 	output := part1(numbers)
 	fmt.Println(output)
 
-	// output = part2(numbers)
-	// fmt.Println(output)
+	output = part2(numbers)
+	fmt.Println(output)
 }
