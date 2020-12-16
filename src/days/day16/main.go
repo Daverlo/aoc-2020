@@ -101,7 +101,83 @@ func part1(rules []Rule, tickets [][]int) int {
 }
 
 func part2(rules []Rule, tickets [][]int) int {
-	return 0
+	validTickets := make([][]int, 0)
+	validTickets = append(validTickets, tickets[0])
+
+	for i := 1; i < len(tickets); i++ {
+		t := tickets[i]
+		isTicketValid := true
+		for _, n := range t {
+			isValid := false
+			for _, r := range rules {
+				if r.IsValid(n) {
+					isValid = true
+					break
+				}
+			}
+			if !isValid {
+				isTicketValid = false
+			}
+		}
+		if isTicketValid {
+			validTickets = append(validTickets, t)
+		}
+	}
+
+	sortedRules := sortFields(rules, validTickets)
+
+	res := 1
+	for i, r := range sortedRules {
+		if strings.HasPrefix(r.Name, "departure") {
+			res *= validTickets[0][i]
+		}
+	}
+	return res
+}
+
+func sortFields(rules []Rule, tickets [][]int) []Rule {
+	ruleToPossibleIndices := make(map[Rule][]int)
+	for _, r := range rules {
+		for i := 0; i < len(rules); i++ {
+			isValid := true
+			for _, t := range tickets {
+				if !r.IsValid(t[i]) {
+					isValid = false
+					break
+				}
+			}
+			if isValid {
+				ruleToPossibleIndices[r] = append(ruleToPossibleIndices[r], i)
+			}
+		}
+	}
+
+	sortedRules := make([]Rule, len(rules))
+	for len(ruleToPossibleIndices) > 0 {
+		for r, indices := range ruleToPossibleIndices {
+			if len(indices) == 1 {
+				sortedRules[indices[0]] = r
+				for r2, indices2 := range ruleToPossibleIndices {
+					ruleToPossibleIndices[r2] = deleteElement(indices2, indices[0])
+				}
+				delete(ruleToPossibleIndices, r)
+				break
+			}
+		}
+	}
+
+	return sortedRules
+}
+
+func deleteElement(a []int, e int) []int {
+	for i, n := range a {
+		if n == e {
+			a[len(a)-1], a[i] = a[i], a[len(a)-1]
+			return a[:len(a)-1]
+		}
+	}
+
+	return a
 }
 
 func main() {
