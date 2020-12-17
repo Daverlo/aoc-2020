@@ -43,6 +43,33 @@ func (i *Instruction) Execute(x, y int, dir rune) (int, int, rune) {
 	return x, y, dir
 }
 
+func (i *Instruction) ExecuteWaypoint(x, y int, wpX, wpY int) (int, int, int, int) {
+	switch i.Action {
+	case 'N':
+		wpY += i.Value
+	case 'S':
+		wpY -= i.Value
+	case 'E':
+		wpX += i.Value
+	case 'W':
+		wpX -= i.Value
+	case 'L':
+		turns := i.Value / 90
+		for i := 0; i < turns; i++ {
+			wpX, wpY = -wpY, wpX
+		}
+	case 'R':
+		turns := i.Value / 90
+		for i := 0; i < turns; i++ {
+			wpX, wpY = wpY, -wpX
+		}
+	case 'F':
+		x += wpX * i.Value
+		y += wpY * i.Value
+	}
+	return x, y, wpX, wpY
+}
+
 func parseInput(path string) ([]Instruction, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -95,8 +122,27 @@ func part1(instructions []Instruction) int {
 	return x + y
 }
 
-func part2(numbers []Instruction) int {
-	return 0
+func part2(instructions []Instruction) int {
+	x := 0
+	y := 0
+	wpX := 10
+	wpY := 1
+
+	for _, i := range instructions {
+		// fmt.Println(x, y, dir)
+		x, y, wpX, wpY = i.ExecuteWaypoint(x, y, wpX, wpY)
+	}
+	// fmt.Println(x, y, dir)
+
+	if x < 0 {
+		x = -x
+	}
+
+	if y < 0 {
+		y = -y
+	}
+
+	return x + y
 }
 
 func main() {
