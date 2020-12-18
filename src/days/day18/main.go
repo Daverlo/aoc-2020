@@ -29,6 +29,8 @@ func parseInput(path string) ([]string, error) {
 			}
 		}
 		line = strings.TrimSuffix(line, "\n")
+		line = strings.ReplaceAll(line, "(", "( ")
+		line = strings.ReplaceAll(line, ")", " )")
 		expressions = append(expressions, line)
 	}
 
@@ -140,8 +142,106 @@ func eval(e string) (int, error) {
 	return res, nil
 }
 
+// Converts an expresion in infix notation into rpn
+func parseExpr(e string, precedence map[string]int, associativity map[string]int) ([]string, error) {
+	output := make([]string, 0)
+	stack := make([]string, 0)
+
+	tokens := strings.Split(e, " ")
+	for _, t := range tokens {
+		_, err := strconv.Atoi(t)
+		if err == nil {
+			output = append(output, t)
+			continue
+		}
+
+		if t == "(" {
+			stack = append(stack, t)
+			continue
+		}
+
+		if t == ")" {
+			i := len(stack) - 1
+			for ; i >= 0; i-- {
+				if stack[i] == "(" {
+					break
+				} else {
+					output = append(output, stack[i])
+				}
+			}
+			if i == -1 {
+				return nil, errors.New("Mismatched parentheses")
+			}
+			stack = stack[:i]
+			continue
+		}
+
+		// t is an operator (+ or *)
+		i := len(stack) - 1
+		for ; i >= 0; i-- {
+			if stack[i] == "(" {
+				break
+			}
+			if precedence[stack[i]] > precedence[t] ||
+				(precedence[stack[i]] == precedence[t] && associativity[t] == -1) {
+				output = append(output, stack[i])
+			} else {
+				break
+			}
+		}
+		stack = stack[:i+1]
+		stack = append(stack, t)
+	}
+
+	for i := len(stack) - 1; i >= 0; i-- {
+		output = append(output, stack[i])
+	}
+
+	return output, nil
+}
+
+func evalRPN(rpn []string) int {
+	stack := make([]string, 0)
+	for _, t := range rpn {
+		if t == "+" {
+			v1, _ := strconv.Atoi(stack[len(stack)-2])
+			v2, _ := strconv.Atoi(stack[len(stack)-1])
+			stack = append(stack[:len(stack)-2], fmt.Sprint(v1+v2))
+		} else if t == "*" {
+			v1, _ := strconv.Atoi(stack[len(stack)-2])
+			v2, _ := strconv.Atoi(stack[len(stack)-1])
+			stack = append(stack[:len(stack)-2], fmt.Sprint(v1*v2))
+		} else {
+			stack = append(stack, t)
+		}
+	}
+
+	v, _ := strconv.Atoi(stack[0])
+	return v
+}
+
 func part2(expressions []string) int {
 	res := 0
+
+	for _, e := range expressions {
+		p := make(map[string]int)
+		p["*"] = 1
+		p["+"] = 2
+
+		a := make(map[string]int)
+		a["*"] = -1
+		a["+"] = -1
+
+		rpn, err := parseExpr(e, p, a)
+		if err != nil {
+			panic(err)
+		}
+
+		v := evalRPN(rpn)
+
+		// fmt.Println(rpn, v)
+		res += v
+	}
 
 	return res
 }
