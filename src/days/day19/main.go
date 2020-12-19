@@ -149,6 +149,21 @@ func part1(g *Grammar, messages []string) int {
 func part2(g *Grammar, messages []string) int {
 	res := 0
 
+	g.Rules["8"] = [][]string{{"42"}, {"42", "8"}}
+
+	// 11: 42 31 | 42 11 31
+	// In CNF:
+	// 11: 42 31 | 999 31
+	// 999: 42 11
+	g.Symbols["999"] = true
+	g.Rules["11"] = [][]string{{"42", "31"}, {"999", "31"}}
+	g.Rules["999"] = [][]string{{"42", "11"}}
+
+	for _, m := range messages {
+		if g.Accepts(m) {
+			res++
+		}
+	}
 	return res
 }
 
