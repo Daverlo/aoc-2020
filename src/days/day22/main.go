@@ -79,8 +79,97 @@ func part1(player1Deck []int, player2Deck []int) int {
 	return res
 }
 
+type Round struct {
+	Player1Value int
+	Player2Value int
+}
+
 func part2(player1Deck []int, player2Deck []int) int {
+	_, res := PlayGame(player1Deck, player2Deck)
+	return res
+}
+
+var gameMem = make(map[Round][]int)
+
+func PlayGame(player1Deck []int, player2Deck []int) (int, int) {
+	v1 := Value(player1Deck)
+	v2 := Value(player2Deck)
+	r := Round{Player1Value: v1, Player2Value: v2}
+	if v, ok := gameMem[r]; ok {
+		return v[0], v[1]
+	}
+
+	newPlayer1Deck := make([]int, len(player1Deck))
+	copy(newPlayer1Deck, player1Deck)
+	newPlayer2Deck := make([]int, len(player2Deck))
+	copy(newPlayer2Deck, player2Deck)
+	mem := make(map[Round]bool)
+
+	var winner int
+	var gameEnded bool
+	for {
+		winner, gameEnded, newPlayer1Deck, newPlayer2Deck = playRound(newPlayer1Deck, newPlayer2Deck, mem)
+		if gameEnded {
+			winnerDeck := newPlayer1Deck
+			if winner == 2 {
+				winnerDeck = newPlayer2Deck
+			}
+			v := Value(winnerDeck)
+			gameMem[r] = []int{winner, v}
+			return winner, v
+		}
+	}
+}
+
+func playRound(player1Deck []int, player2Deck []int, mem map[Round]bool) (int, bool, []int, []int) {
+	if len(player1Deck) == 0 || len(player2Deck) == 0 {
+		winner := 1
+		if len(player1Deck) == 0 {
+			winner = 2
+		}
+		return winner, true, player1Deck, player2Deck
+	}
+	// Condition 1: If the round has already been played
+	// Player1 wins
+	v1 := Value(player1Deck)
+	v2 := Value(player2Deck)
+	r := Round{Player1Value: v1, Player2Value: v2}
+
+	if _, ok := mem[r]; ok {
+		return 1, true, player1Deck, player2Deck
+	}
+	mem[r] = true
+
+	p1 := player1Deck[0]
+	p2 := player2Deck[0]
+	player1Deck = player1Deck[1:]
+	player2Deck = player2Deck[1:]
+
+	// Condition 2: The winner is determined by playing a new GAME
+	if len(player1Deck) >= p1 && len(player2Deck) >= p2 {
+		winner, _ := PlayGame(player1Deck[:p1], player2Deck[:p2])
+		if winner == 1 {
+			player1Deck = append(player1Deck, p1, p2)
+			return 1, false, player1Deck, player2Deck
+		}
+		player2Deck = append(player2Deck, p2, p1)
+		return 2, false, player1Deck, player2Deck
+	}
+
+	// Condition 3: Highest card wins
+	if p1 > p2 {
+		player1Deck = append(player1Deck, p1, p2)
+		return 1, false, player1Deck, player2Deck
+	}
+	player2Deck = append(player2Deck, p2, p1)
+	return 2, false, player1Deck, player2Deck
+}
+
+func Value(deck []int) int {
 	res := 0
+	for i, v := range deck {
+		res += (len(deck) - i) * v
+	}
 	return res
 }
 
