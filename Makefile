@@ -1,5 +1,6 @@
 GO = go
 
+
 all: clean build
 
 days := $(wildcard ./src/days/*)
